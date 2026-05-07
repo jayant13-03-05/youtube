@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { YoutubeTranscript } from "youtube-transcript";
 
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
 });
 
 export async function POST(req: Request) {
