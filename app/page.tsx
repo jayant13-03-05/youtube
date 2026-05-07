@@ -60,10 +60,9 @@ export default function Home() {
         {summary && (
           <div className="mt-6 bg-white/10 p-4 rounded-lg border border-white/20">
             <h2 className="font-semibold mb-2 text-lg">Summary:</h2>
-            <pre className="whitespace-pre-wrap text-gray-200">
-              {summary}
-            </pre>
-          </div>
+ <p className="whitespace-pre-wrap text-gray-200 leading-7">
+  {summary}
+</p>         </div>
         )}
       </div>
     </div>
