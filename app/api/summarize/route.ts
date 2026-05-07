@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import Groq from "groq-sdk";
 import { NextResponse } from "next/server";
 import { YoutubeTranscript } from "youtube-transcript";
@@ -8,42 +10,54 @@ const groq = new Groq({
 
 export async function POST(req: Request) {
   try {
+    console.log("API HIT");
+
+    console.log(
+      process.env.GROQ_API_KEY ? "KEY FOUND" : "KEY MISSING"
+    );
+
     const { videoId } = await req.json();
 
+    console.log("VIDEO ID:", videoId);
+
     if (!videoId) {
-      return NextResponse.json({ error: "No videoId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No videoId" },
+        { status: 400 }
+      );
     }
 
-    // 🔹 Transcript fetch
     let text = "";
 
     try {
-      const transcriptData = await YoutubeTranscript.fetchTranscript(videoId);
-      text = transcriptData.map((item: any) => item.text).join(" ");
-    } catch {
+      console.log("FETCHING TRANSCRIPT");
+
+      const transcriptData =
+        await YoutubeTranscript.fetchTranscript(videoId);
+
+      console.log("TRANSCRIPT SUCCESS");
+
+      text = transcriptData
+        .map((item: any) => item.text)
+        .join(" ");
+
+    } catch (err) {
+      console.error("TRANSCRIPT ERROR:", err);
+
       return NextResponse.json(
         { error: "Transcript not available" },
         { status: 400 }
       );
     }
 
-    // 🔹 Groq AI call
+    console.log("CALLING GROQ");
+
     const response = await groq.chat.completions.create({
-        model: "llama-3.1-8b-instant",
-           messages: [
+      model: "llama-3.1-8b-instant",
+      messages: [
         {
           role: "system",
-          content: `
-Summarize the YouTube video into clear bullet points with explanation.
-
-Rules:
-- Use bullet points (start with "- ")
-- Each point should explain the concept in 2-3 lines
-- Keep language simple and easy to understand
-- Do NOT write long paragraphs
-- Cover main concepts only
-- Maximum 6-8 points
-`,
+          content: "Summarize this video",
         },
         {
           role: "user",
@@ -52,12 +66,18 @@ Rules:
       ],
     });
 
+    console.log("GROQ SUCCESS");
+
     return NextResponse.json({
       summary: response.choices[0].message.content,
     });
 
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("MAIN ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
   }
 }
